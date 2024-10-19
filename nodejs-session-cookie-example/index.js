@@ -1,7 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
-const { signinHandler, welcomeHandler, refreshHandler, logoutHandler } = require('./handlers')
+const { signinHandler, welcomeHandler, refreshHandler, logoutHandler, listHandler } = require('./handlers')
 
 const app = express()
 var cors = require('cors');
@@ -17,6 +17,7 @@ app.post('/signin', signinHandler)
 app.get('/welcome', welcomeHandler)
 app.post('/refresh', refreshHandler)
 app.get('/logout', logoutHandler)
+app.get('/list', listHandler)
 
 
 app.listen(8888)

@@ -12,7 +12,7 @@ class Session {
     }
 
     isExpired() {
-        this.expiresAt < (new Date())
+        return this.expiresAt < (new Date())
     }
 }
 
@@ -20,6 +20,7 @@ const sessions = {}
 
 const signinHandler = (req, res) => {
     // get users credentials from the JSON body
+    console.log('signin')
     const { username, password } = req.body
     if (!username) {
         // If the username isn't present, return an HTTP unauthorized code
@@ -80,6 +81,7 @@ const welcomeHandler = (req, res) => {
     // if the session has expired, return an unauthorized error, and delete the 
     // session from our map
     if (userSession.isExpired()) {
+        console.log('err')
         delete sessions[sessionToken]
         res.status(401).end()
         return
@@ -89,6 +91,55 @@ const welcomeHandler = (req, res) => {
     // send a welcome message
     res.send(`Welcome  ${userSession.username}!`).end()
 }
+
+
+const listHandler = (req, res) => {
+    // if this request doesn't have any cookies, that means it isn't
+    // authenticated. Return an error code.
+    if (!req.cookies) {
+        res.status(401).end()
+        return
+    }
+
+    // We can obtain the session token from the requests cookies, which come with every request
+    const sessionToken = req.cookies['session_token']
+    if (!sessionToken) {
+        // If the cookie is not set, return an unauthorized status
+        res.status(401).end()
+        return
+    }
+
+    // We then get the session of the user from our session map
+    // that we set in the signinHandler
+    userSession = sessions[sessionToken]
+    if (!userSession) {
+        // If the session token is not present in session map, return an unauthorized error
+        res.status(401).end()
+        return
+    }
+    // if the session has expired, return an unauthorized error, and delete the 
+    // session from our map
+    if (userSession.isExpired()) {
+        console.log('err')
+        delete sessions[sessionToken]
+        res.status(401).end()
+        return
+    }
+
+    // If all checks have passed, we can consider the user authenticated and
+    // send a welcome message
+    res.json([{
+        author:'학과사무실',
+        authorOrg: '컴퓨터공학부',
+        isVerified: true,
+        content: '2024학년도 2학기 수강신청 포기제도를 아래와 같이 안내하오니 기간 내에 신청하시기 바랍니다.',
+        date: '2024. 10. 07',
+        comments: 85,
+        likes: 1279
+        
+    }]).end()
+}
+
 
 const refreshHandler = (req, res) => {
     // (BEGIN) The code from this point is the same as the first part of the welcomeHandler
@@ -155,5 +206,6 @@ module.exports = {
     signinHandler,
     welcomeHandler,
     refreshHandler,
-    logoutHandler
+    logoutHandler,
+    listHandler
 }
